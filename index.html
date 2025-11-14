@@ -16,39 +16,136 @@
         }
         .container {
             text-align: center;
-            transform: translateY(-50%); /* İçeriği daha yukarıya çeker */
+            transform: translateY(-50%);
         }
         h1 {
             font-size: 2em;
             color: #4CAF50;
-            margin-bottom: 20px; /* Butona yakınlaştırmak için azalan boşluk */
+            margin-bottom: 20px;
         }
         button {
-            padding: 10px 50px;
-            font-size: 1.2em;
+            padding: 10px 40px; /* Biraz küçültüldü */
+            font-size: 1.1em; /* Biraz küçültüldü */
             color: white;
-            background-color: #4CAF50;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 5px;
         }
         button:hover {
-            background-color: #45a049;
+            opacity: 0.9;
+        }
+        
+        /* Buton Renkleri */
+        #btnSite {
+            background-color: #4CAF50; /* Yeşil */
+        }
+        #btnNewSite {
+            background-color: #008CBA; /* Mavi */
+        }
+        #btnReset {
+            background-color: #f44336; /* Kırmızı */
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Film izle</h1>
-        <button onclick="openSite()">Site</button>
-    </div>
+        <button id="btnSite">Site</button>
+        <button id="btnNewSite">Yeni Site (+1)</button>
+        <button id="btnReset">Numarayı Ayarla</button> </div>
 
     <script>
-        function openSite() {
-            // Aynı sayfada siteyi aç
-            window.location.href = "https://dizipal1512.com/";
-        }
+        // URL'nin sabit kısımlarını tanımlayalım
+        const URL_PREFIX = 'https://dizipal';
+        const URL_SUFFIX = '.com/';
+        
+        // Hafıza (localStorage) ayarları
+        const STORAGE_KEY = 'dizipalCurrentNumber'; // Sadece numarayı saklayacağız
+        const DEFAULT_NUMBER = '1512'; // Başlangıç varsayılan numarası
+
+        // 1. Sayfa yüklendiğinde:
+        // Hafızadan SADECE kayıtlı numarayı al. Eğer yoksa, varsayılanı kullan.
+        let currentNumber = localStorage.getItem(STORAGE_KEY) || DEFAULT_NUMBER;
+
+        // Butonları seçelim
+        const btnSite = document.getElementById('btnSite');
+        const btnNewSite = document.getElementById('btnNewSite');
+        const btnReset = document.getElementById('btnReset');
+
+        // 2. "Site" butonu tıklandığında:
+        btnSite.onclick = function() {
+            // Mevcut numara ile tam URL'yi oluştur
+            let currentUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
+            // Siteyi aç
+            window.location.href = currentUrl;
+        };
+
+        // 3. "Yeni Site (+1)" butonu tıklandığında:
+        btnNewSite.onclick = function() {
+            // Onay al
+            let confirmation = confirm(
+                "Mevcut site numarası ('" + currentNumber + "') 1 artırılacak ve kalıcı olarak kaydedilecektir.\n\n" +
+                "Onaylıyor musunuz?"
+            );
+
+            if (confirmation) {
+                // Mevcut numarayı matematiksel sayıya çevir
+                let number = parseInt(currentNumber);
+                // 1 artır
+                number++;
+                
+                // Tekrar metin (string) formatına çevir
+                currentNumber = number.toString();
+                
+                // Yeni numarayı kalıcı olarak tarayıcı hafızasına kaydet
+                localStorage.setItem(STORAGE_KEY, currentNumber);
+                
+                // Yeni oluşturulan siteyi aç
+                let newUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
+                alert("Yeni site numarası kaydedildi: " + currentNumber + "\nŞimdi yönlendiriliyorsunuz.");
+                window.location.href = newUrl;
+            } else {
+                alert("İşlem iptal edildi.");
+            }
+        };
+
+        // 4. "Numarayı Ayarla" (Reset) butonu tıklandığında:
+        btnReset.onclick = function() {
+            // prompt() ile kullanıcıdan yeni numarayı isteyelim
+            // İkinci parametre (currentNumber), kutucukta mevcut numaranın yazılı gelmesini sağlar
+            let newNumberStr = prompt("Lütfen yeni alan adı numarasını girin:", currentNumber);
+
+            // Eğer kullanıcı "İptal"e basarsa (null) veya boş bırakırsa
+            if (newNumberStr === null || newNumberStr.trim() === "") {
+                alert("İşlem iptal edildi.");
+                return; // Fonksiyondan çık
+            }
+
+            // Girilen değerin bir sayı olup olmadığını kontrol et
+            if (isNaN(newNumberStr)) {
+                alert("Geçersiz giriş. Lütfen sadece sayı girin (Örn: 1514).");
+                return; // Fonksiyondan çık
+            }
+
+            // Kullanıcı "1514.com" gibi bir şey yazarsa diye sadece sayıyı alalım
+            let cleanNumber = parseInt(newNumberStr).toString();
+
+            // Yeni numarayı hafızaya ve mevcut değişkene kaydet
+            currentNumber = cleanNumber;
+            localStorage.setItem(STORAGE_KEY, currentNumber);
+
+            // Kullanıcıya bilgi ver
+            let newUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
+            alert(
+                "Site numarası başarıyla ayarlandı!\n\n" +
+                "Yeni Numara: " + currentNumber + "\n" +
+                "Yeni Adres: " + newUrl + "\n\n" +
+                "'Site' butonuna bastığınızda artık bu adres açılacaktır."
+            );
+            // Bu buton siteyi açmaz, sadece ayarlar.
+        };
     </script>
 </body>
 </html>
