@@ -1,31 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-M">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film İzleme</title>
+    <title>Film İzleme (Koyu Tema)</title>
     <style>
+        /* --- Koyu Tema Stilleri --- */
         body {
-            background-color: #f0f0f5;
+            /* Ana arka plan koyu */
+            background-color: #121212; 
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            color: #e0e0e0; /* Varsayılan metin rengi açık */
         }
         .container {
             text-align: center;
-            transform: translateY(-50%);
+            width: 90%;
+            max-width: 500px;
+            /* Konteyner arka planı biraz daha açık koyu */
+            background-color: #1e1e1e; 
+            padding: 30px;
+            border-radius: 15px;
+            /* Gölgeyi açık renkli ve yumuşak yaptık */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid #333; /* Hafif bir sınır */
         }
         h1 {
             font-size: 2em;
-            color: #4CAF50;
+            /* Başlık rengi açık */
+            color: #f1f1f1; 
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.1em;
+            /* Paragraf rengi açık gri */
+            color: #c0c0c0; 
+            margin: 8px 0;
+        }
+        p strong {
+            color: #ffffff; /* Vurgulu metinler daha parlak */
+        }
+        p.user-info {
+             margin-bottom: 25px;
+        }
+        
+        /* --- Sekme Sistemi Stilleri --- */
+        .tab-buttons {
+            overflow: hidden;
+            /* Sekme alt çizgisi koyu temaya uygun */
+            border-bottom: 2px solid #333; 
             margin-bottom: 20px;
         }
+        .tab-link {
+            /* Pasif sekme butonu arka planı */
+            background-color: #2a2a2a;
+            /* Pasif sekme metin rengi */
+            color: #a0a0a0;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: background-color 0.3s;
+            font-size: 1em;
+            width: 33.33%;
+            border-radius: 0;
+            margin: 0;
+        }
+        .tab-link:hover {
+            /* Hover efekti */
+            background-color: #333;
+            color: #f1f1f1;
+        }
+        /* Aktif sekme butonu (Açık renk kaldı, kontrast için güzel) */
+        .tab-link.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        /* Sekme İçerik Alanı */
+        .tab-content {
+            display: none; 
+            padding: 10px 0;
+            animation: fadeIn 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        /* --- Bitiş: Sekme Sistemi Stilleri --- */
+
+        
+        /* Genel Buton Stili (Renkler zaten koyu temaya uygun) */
         button {
-            padding: 10px 40px; /* Biraz küçültüldü */
-            font-size: 1.1em; /* Biraz küçültüldü */
+            padding: 12px 30px;
+            font-size: 1.1em;
             color: white;
             border: none;
             border-radius: 10px;
@@ -37,72 +115,96 @@
             opacity: 0.9;
         }
         
-        /* Buton Renkleri */
-        #btnSite {
+        /* Buton Renkleri (Aynı kaldı) */
+        #btnSiteDizipal {
             background-color: #4CAF50; /* Yeşil */
         }
-        #btnNewSite {
+        #btnNewSiteDizipal {
             background-color: #008CBA; /* Mavi */
         }
-        #btnReset {
+        #btnResetDizipal {
             background-color: #f44336; /* Kırmızı */
         }
+        
+        #btnSiteDizibox, #btnSiteHdfilm {
+            background-color: #8E44AD; /* Mor */
+            width: 80%;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Film izle</h1>
-        <button id="btnSite">Site</button>
-        <button id="btnNewSite">Yeni Site (+1)</button>
-        <button id="btnReset">Numarayı Ayarla</button> </div>
+        
+
+        <div class="tab-buttons">
+            <button class="tab-link active" data-tab="dizipal">Dizipal</button>
+            <button class="tab-link" data-tab="dizibox">Dizibox</button>
+            <button class="tab-link" data-tab="hdfilm">HdFilmCehennemi</button>
+        </div>
+
+        <div id="dizipal" class="tab-content active">
+            <button id="btnSiteDizipal">Site</button>
+            <button id="btnNewSiteDizipal">Yeni Site (+1)</button>
+            <button id="btnResetDizipal">Numarayı Ayarla</button>
+        </div>
+
+        <div id="dizibox" class="tab-content">
+            <button id="btnSiteDizibox">Dizibox Sitesini Aç</button>
+        </div>
+
+        <div id="hdfilm" class="tab-content">
+            <button id="btnSiteHdfilm">HDFilmCehennemi Sitesini Aç</button>
+        </div>
+
+    </div>
 
     <script>
-        // URL'nin sabit kısımlarını tanımlayalım
+        // --- BÖLÜM 1: SEKME YÖNETİMİ ---
+        
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const tabId = link.getAttribute('data-tab'); 
+
+                tabLinks.forEach(item => item.classList.remove('active'));
+                tabContents.forEach(item => item.classList.remove('active'));
+
+                link.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        
+        // --- BÖLÜM 2: DİZİPAL YÖNETİMİ (MEVCUT KODUNUZ) ---
+        
         const URL_PREFIX = 'https://dizipal';
         const URL_SUFFIX = '.com/';
-        
-        // Hafıza (localStorage) ayarları
-        const STORAGE_KEY = 'dizipalCurrentNumber'; // Sadece numarayı saklayacağız
-        const DEFAULT_NUMBER = '1512'; // Başlangıç varsayılan numarası
+        const STORAGE_KEY = 'dizipalCurrentNumber';
+        const DEFAULT_NUMBER = '1512';
 
-        // 1. Sayfa yüklendiğinde:
-        // Hafızadan SADECE kayıtlı numarayı al. Eğer yoksa, varsayılanı kullan.
         let currentNumber = localStorage.getItem(STORAGE_KEY) || DEFAULT_NUMBER;
 
-        // Butonları seçelim
-        const btnSite = document.getElementById('btnSite');
-        const btnNewSite = document.getElementById('btnNewSite');
-        const btnReset = document.getElementById('btnReset');
+        const btnSiteDizipal = document.getElementById('btnSiteDizipal');
+        const btnNewSiteDizipal = document.getElementById('btnNewSiteDizipal');
+        const btnResetDizipal = document.getElementById('btnResetDizipal');
 
-        // 2. "Site" butonu tıklandığında:
-        btnSite.onclick = function() {
-            // Mevcut numara ile tam URL'yi oluştur
+        btnSiteDizipal.onclick = function() {
             let currentUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
-            // Siteyi aç
             window.location.href = currentUrl;
         };
 
-        // 3. "Yeni Site (+1)" butonu tıklandığında:
-        btnNewSite.onclick = function() {
-            // Onay al
-            let confirmation = confirm(
-                "Mevcut site numarası ('" + currentNumber + "') 1 artırılacak ve kalıcı olarak kaydedilecektir.\n\n" +
-                "Onaylıyor musunuz?"
-            );
-
+        btnNewSiteDizipal.onclick = function() {
+            let confirmation = confirm("Mevcut Dizipal numarası ('" + currentNumber + "') 1 artırılacak ve kaydedilecektir. Onaylıyor musunuz?");
             if (confirmation) {
-                // Mevcut numarayı matematiksel sayıya çevir
                 let number = parseInt(currentNumber);
-                // 1 artır
                 number++;
-                
-                // Tekrar metin (string) formatına çevir
                 currentNumber = number.toString();
-                
-                // Yeni numarayı kalıcı olarak tarayıcı hafızasına kaydet
                 localStorage.setItem(STORAGE_KEY, currentNumber);
                 
-                // Yeni oluşturulan siteyi aç
                 let newUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
                 alert("Yeni site numarası kaydedildi: " + currentNumber + "\nŞimdi yönlendiriliyorsunuz.");
                 window.location.href = newUrl;
@@ -111,40 +213,34 @@
             }
         };
 
-        // 4. "Numarayı Ayarla" (Reset) butonu tıklandığında:
-        btnReset.onclick = function() {
-            // prompt() ile kullanıcıdan yeni numarayı isteyelim
-            // İkinci parametre (currentNumber), kutucukta mevcut numaranın yazılı gelmesini sağlar
-            let newNumberStr = prompt("Lütfen yeni alan adı numarasını girin:", currentNumber);
-
-            // Eğer kullanıcı "İptal"e basarsa (null) veya boş bırakırsa
+        btnResetDizipal.onclick = function() {
+            let newNumberStr = prompt("Lütfen yeni Dizipal numarasını girin:", currentNumber);
             if (newNumberStr === null || newNumberStr.trim() === "") {
                 alert("İşlem iptal edildi.");
-                return; // Fonksiyondan çık
+                return;
             }
-
-            // Girilen değerin bir sayı olup olmadığını kontrol et
             if (isNaN(newNumberStr)) {
                 alert("Geçersiz giriş. Lütfen sadece sayı girin (Örn: 1514).");
-                return; // Fonksiyondan çık
+                return;
             }
-
-            // Kullanıcı "1514.com" gibi bir şey yazarsa diye sadece sayıyı alalım
             let cleanNumber = parseInt(newNumberStr).toString();
-
-            // Yeni numarayı hafızaya ve mevcut değişkene kaydet
             currentNumber = cleanNumber;
             localStorage.setItem(STORAGE_KEY, currentNumber);
-
-            // Kullanıcıya bilgi ver
             let newUrl = URL_PREFIX + currentNumber + URL_SUFFIX;
             alert(
-                "Site numarası başarıyla ayarlandı!\n\n" +
-                "Yeni Numara: " + currentNumber + "\n" +
-                "Yeni Adres: " + newUrl + "\n\n" +
-                "'Site' butonuna bastığınızda artık bu adres açılacaktır."
+                "Dizipal numarası ayarlandı!\n\nYeni Numara: " + currentNumber + "\nYeni Adres: " + newUrl
             );
-            // Bu buton siteyi açmaz, sadece ayarlar.
+        };
+        
+
+        // --- BÖLÜM 3: DİĞER SİTE BUTONLARI ---
+
+        document.getElementById('btnSiteDizibox').onclick = function() {
+            window.location.href = "https://www.dizibox.live/";
+        };
+
+        document.getElementById('btnSiteHdfilm').onclick = function() {
+            window.location.href = "https://www.hdfilmcehennemi.page/";
         };
     </script>
 </body>
