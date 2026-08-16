@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Film İzleme (Gelişmiş Portal v2.3)</title>
+<style>
+    /* --- Koyu Tema Stilleri --- */
+    body {
+        background-color: #121212;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #e0e0e0;
+    }
+    .container {
+        text-align: center;
+        width: 95%;
+        max-width: 550px;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        border: 1px solid #333;
+    }
+    h1 {
+        font-size: 2em;
+        color: #f1f1f1;
+        margin-bottom: 20px;
+    }
+
+    /* --- Sekme Sistemi --- */
+    .tab-buttons {
+        display: flex;
+        border-bottom: 2px solid #333; 
+        margin-bottom: 20px;
+        overflow-x: auto;
+        align-items: center;
+    }
+    .tab-link {
+        background-color: #2a2a2a;
+        color: #a0a0a0;
+        flex: 1;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 10px;
+        transition: 0.3s;
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+    .tab-link:hover {
+        background-color: #333;
+        color: #f1f1f1;
+    }
+    .tab-link.active {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    /* YENİ EKLENEN SEKME BUTONU TASARIMI */
+    .add-tab-btn {
+        background-color: transparent;
+        color: #888;
+        border: 2px dashed #444;
+        cursor: pointer;
+        padding: 8px 15px;
+        margin-left: 5px;
+        transition: 0.3s;
+        font-size: 1.2em;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 100%;
+    }
+
+    .add-tab-btn:hover {
+        color: #fff;
+        border-color: #4CAF50;
+        background-color: #4CAF50;
+    }
+    
+    .tab-content {
+        display: none; 
+        padding: 10px 0;
+        animation: fadeIn 0.4s;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(10px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* --- Kontrol Elemanları --- */
+    .controls {
+        background: #252525;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+    .num-display {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 10px;
+    }
+    input[type="number"] {
+        width: 80px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #444;
+        background: #121212;
+        color: white;
+        text-align: center;
+    }
+    .btn-group {
+        display: flex;
+        gap: 5px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    button.site-btn {
+        background-color: #8E44AD; 
+        padding: 12px 20px;
+        font-size: 1.1em;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+        width: 100%;
+        margin-top: 10px;
+    }
+    button.site-btn:hover { filter: brightness(1.1); }
+    
+    button.action-btn {
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button.action-btn:hover { background-color: #555; }
+
+    /* SİLME BUTONU TASARIMI */
+    .delete-container {
+        text-align: right; 
+        border-top: 1px solid #333; 
+        margin-top: 15px; 
+        padding-top: 10px;
+    }
+    button.delete-tab-btn {
+        background-color: transparent;
+        color: #e74c3c;
+        border: 1px solid #e74c3c;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85em;
+        transition: 0.3s;
+    }
+    button.delete-tab-btn:hover { 
+        background-color: #e74c3c; 
+        color: white; 
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Film İzle</h1>
+    
+    <div class="tab-buttons" id="tabContainer">
+        <button class="tab-link active" data-tab="dizipal">Dizipal</button>
+        <button class="tab-link" data-tab="dizibox">Dizibox</button>
+        <button class="tab-link" data-tab="hdfilmcehennemi">HDFilmcehennemi</button>
+        <button class="tab-link" data-tab="fullhd">FullHDFilm</button>
+        <!-- YENİ SEKME EKLEME BUTONU -->
+        <button id="addTabBtn" class="add-tab-btn" title="Yeni Platform Ekle">+</button>
+    </div>
+
+    <div id="dizipal" class="tab-content active">
+        <div class="controls">
+            <div class="num-display">Güncel Sayı: <span id="currentNum">...</span></div>
+            <div class="btn-group">
+                <input type="number" id="numInput">
+                <button class="action-btn" onclick="setNumber()">Sayıyı Ayarla</button>
+            </div>
+            <button class="action-btn" style="width: 100%; margin-top: 10px; background-color: #2c3e50;" onclick="incrementNumber()">+1 Arttır</button>
+        </div>
+        <button id="btnSiteDizipal" class="site-btn">Dizipal'a Git (Sayı ile)</button>
+        <button id="btnDirectLink" class="site-btn" style="background-color: #d35400;">Hızlı Giriş (t.ly)</button>
+        <div class="delete-container">
+            <button class="delete-tab-btn" data-target="dizipal">Sekmeyi Kaldır</button>
+        </div>
+    </div>
+
+    <div id="dizibox" class="tab-content">
+        <button id="btnSiteDizibox" class="site-btn">Dizibox Giriş</button>
+        <div class="delete-container">
+            <button class="delete-tab-btn" data-target="dizibox">Sekmeyi Kaldır</button>
+        </div>
+    </div>
+
+    <div id="hdfilmcehennemi" class="tab-content">
+        <button id="btnSiteHdfilm" class="site-btn">HDFilmcehennemi Giriş</button>
+        <div class="delete-container">
+            <button class="delete-tab-btn" data-target="hdfilmcehennemi">Sekmeyi Kaldır</button>
+        </div>
+    </div>
+
+    <div id="fullhd" class="tab-content">
+        <button id="btnSiteFullhd" class="site-btn">FullHDFilmizlesene Giriş</button>
+        <div class="delete-container">
+            <button class="delete-tab-btn" data-target="fullhd">Sekmeyi Kaldır</button>
+        </div>
+    </div>
+
+    <div id="footerInfo" style="margin-top: 20px; font-size: 0.9em; border-top: 1px solid #333; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <button id="resetAppBtn" style="background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 0.85em;">Ayarları Sıfırla</button>
+    </div>
+</div>
+
+<script>
+    // --- SEKME YÖNETİMİ ---
+    const tabContainer = document.getElementById('tabContainer');
+    const addTabBtn = document.getElementById('addTabBtn');
+
+    tabContainer.addEventListener('click', (e) => {
+        if(e.target.classList.contains('tab-link')) {
+            const tabId = e.target.getAttribute('data-tab'); 
+            
+            document.querySelectorAll('.tab-link').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(item => item.classList.remove('active'));
+            
+            e.target.classList.add('active');
+            const targetContent = document.getElementById(tabId);
+            if(targetContent) targetContent.classList.add('active');
+        }
+    });
+
+    // Herhangi bir sekme silinirse veya yoksa ilk sekmeyi aktif yapan fonksiyon
+    function ensureActiveTab() {
+        const activeLink = document.querySelector('.tab-link.active');
+        if (!activeLink) {
+            const firstLink = document.querySelector('.tab-link'); // + butonu haricindeki ilk sekmeyi bulur
+            if (firstLink) {
+                firstLink.classList.add('active');
+                const contentId = firstLink.getAttribute('data-tab');
+                const contentEl = document.getElementById(contentId);
+                if(contentEl) contentEl.classList.add('active');
+            }
+        }
+    }
+
+    // --- SİLİNEN VARSAYILAN SEKMELERİ YÜKLEME VE GİZLEME ---
+    let deletedTabs = JSON.parse(localStorage.getItem('deletedTabsData')) || [];
+    deletedTabs.forEach(tabId => {
+        const link = document.querySelector(`.tab-link[data-tab="${tabId}"]`);
+        const content = document.getElementById(tabId);
+        if(link) link.remove();
+        if(content) content.remove();
+    });
+
+    // --- ÖZEL SEKMELERİ HAFIZADA TUTMA (LOCALSTORAGE) ---
+    let customTabs = JSON.parse(localStorage.getItem('customTabsData')) || [];
+
+    customTabs.forEach(tab => {
+        createTabElement(tab.id, tab.name, tab.url);
+    });
+
+    ensureActiveTab(); // Sayfa yüklendiğinde boş ekran kalmasın diye kontrol et
+
+    // Sekmeyi Ekranda Oluşturan Fonksiyon
+    function createTabElement(tabId, tabName, tabUrl) {
+        // Tab Butonu
+        const newTabBtn = document.createElement('button');
+        newTabBtn.className = 'tab-link';
+        newTabBtn.setAttribute('data-tab', tabId);
+        newTabBtn.textContent = tabName;
+        tabContainer.insertBefore(newTabBtn, addTabBtn);
+
+        // İçerik Alanı
+        const newContentDiv = document.createElement('div');
+        newContentDiv.id = tabId;
+        newContentDiv.className = 'tab-content';
+        
+        // Site Butonu
+        const newSiteBtn = document.createElement('button');
+        newSiteBtn.className = 'site-btn';
+        newSiteBtn.textContent = `${tabName} Giriş`;
+        newSiteBtn.onclick = function() {
+            window.open(tabUrl, '_blank');
+        };
+        newContentDiv.appendChild(newSiteBtn);
+
+        // Silme Butonu
+        const deleteContainer = document.createElement('div');
+        deleteContainer.className = 'delete-container';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-tab-btn';
+        deleteBtn.setAttribute('data-target', tabId);
+        deleteBtn.textContent = 'Sekmeyi Kaldır';
+        deleteContainer.appendChild(deleteBtn);
+        
+        newContentDiv.appendChild(deleteContainer);
+
+        // Sayfaya Ekle
+        const footerInfo = document.getElementById('footerInfo');
+        footerInfo.parentNode.insertBefore(newContentDiv, footerInfo);
+    }
+
+    // --- YENİ SEKME EKLEME İŞLEMİ ---
+    addTabBtn.addEventListener('click', () => {
+        const tabName = prompt("Yeni platform adını girin (Örn: Netflix):");
+        
+        if (tabName && tabName.trim() !== "") {
+            const tabUrl = prompt(`${tabName.trim()} için web adresini (URL) girin\n(Örn: https://www.netflix.com):`);
+
+            if (tabUrl && tabUrl.trim() !== "") {
+                let finalUrl = tabUrl.trim();
+                if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                    finalUrl = 'https://' + finalUrl;
+                }
+
+                const newTabId = 'customTab_' + Date.now(); 
+
+                createTabElement(newTabId, tabName.trim(), finalUrl);
+
+                customTabs.push({ id: newTabId, name: tabName.trim(), url: finalUrl });
+                localStorage.setItem('customTabsData', JSON.stringify(customTabs));
+
+            } else {
+                alert("URL girmediniz. İşlem iptal edildi.");
+            }
+        }
+    });
+
+    // --- SEKME SİLME İŞLEMİ (TÜM SEKMELER İÇİN) ---
+    document.addEventListener('click', function(e) {
+        if(e.target.classList.contains('delete-tab-btn')) {
+            const tabId = e.target.getAttribute('data-target');
+            
+            if(confirm("Bu sekmeyi kaldırmak istediğinize emin misiniz?")) {
+                
+                const link = document.querySelector(`.tab-link[data-tab="${tabId}"]`);
+                const content = document.getElementById(tabId);
+                
+                let wasActive = false;
+                if (link) {
+                    wasActive = link.classList.contains('active');
+                    link.remove();
+                }
+                if (content) {
+                    content.remove();
+                }
+
+                // Hafızadan Silme İşlemleri
+                if (tabId.startsWith('customTab_')) {
+                    // Özel eklenen sekmeyi diziden çıkar
+                    customTabs = customTabs.filter(tab => tab.id !== tabId);
+                    localStorage.setItem('customTabsData', JSON.stringify(customTabs));
+                } else {
+                    // Varsayılan sekmeyi silinenler listesine ekle
+                    if(!deletedTabs.includes(tabId)) {
+                        deletedTabs.push(tabId);
+                        localStorage.setItem('deletedTabsData', JSON.stringify(deletedTabs));
+                    }
+                }
+
+                // Aktif olan sekme silindiyse diğerine geç
+                if (wasActive) {
+                    ensureActiveTab();
+                }
+            }
+        }
+    });
+
+    // --- AYARLARI SIFIRLA ---
+    document.getElementById('resetAppBtn').onclick = function() {
+        if(confirm("Tüm eklediğiniz sekmeler silinecek ve varsayılan sekmeler geri getirilecek. Emin misiniz?")) {
+            localStorage.removeItem('customTabsData');
+            localStorage.removeItem('deletedTabsData');
+            location.reload();
+        }
+    };
+
+    // --- DIZIPAL SAYI MANTIĞI VE LOCALSTORAGE ---
+    let dizipalNum = localStorage.getItem('kayitliSayi') ? parseInt(localStorage.getItem('kayitliSayi')) : 1536;
+
+    updateUI();
+
+    function updateUI() {
+        const currentNumEl = document.getElementById('currentNum');
+        const numInputEl = document.getElementById('numInput');
+        if(currentNumEl) currentNumEl.innerText = dizipalNum;
+        if(numInputEl) numInputEl.value = dizipalNum;
+        localStorage.setItem('kayitliSayi', dizipalNum);
+    }
+
+    function incrementNumber() {
+        dizipalNum++;
+        updateUI();
+    }
+
+    function setNumber() {
+        const val = document.getElementById('numInput').value;
+        if(val) {
+            dizipalNum = parseInt(val);
+            updateUI();
+        }
+    }
+
+    // --- MEVCUT BUTON TIKLAMA OLAYLARI ---
+    const btnDizipal = document.getElementById('btnSiteDizipal');
+    if(btnDizipal) btnDizipal.onclick = function() { window.open(`https://dizipal${dizipalNum}.com`, '_blank'); };
+
+    const btnDirectLink = document.getElementById('btnDirectLink');
+    if(btnDirectLink) btnDirectLink.onclick = function() { window.open('https://t.ly/dizipalgiris', '_blank'); };
+
+    const btnDizibox = document.getElementById('btnSiteDizibox');
+    if(btnDizibox) btnDizibox.onclick = function() { window.open("https://www.dizibox.live/", "_blank"); };
+
+    const btnHdfilm = document.getElementById('btnSiteHdfilm');
+    if(btnHdfilm) btnHdfilm.onclick = function() { window.open("https://www.hdfilmcehennemi.nl/", "_blank"); };
+
+    const btnFullhd = document.getElementById('btnSiteFullhd');
+    if(btnFullhd) btnFullhd.onclick = function() { window.open("https://www.fullhdfilmizlesene.mx/", "_blank"); };
+
+</script>
+</body>
+</html>
